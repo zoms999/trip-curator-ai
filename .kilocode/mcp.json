@@ -1,0 +1,79 @@
+{
+  "mcpServers": {
+    "git": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-git",
+        "--repository",
+        "github.com/zoms999/"
+      ],
+      "disabled": true,
+      "alwaysAllow": []
+    },
+    "mcp-playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@adalovu/mcp-playwright",
+        "--key",
+        "b1a7aff1-d24f-4790-9b08-2275c239f5a8",
+        "--profile",
+        "awake-cockroach-TRaLe1"
+      ],
+      "disabled": true,
+      "alwaysAllow": []
+    },
+    "figma-dev-mode": {
+      "type": "sse",
+      "url": "http://127.0.0.1:3845/sse"
+    },
+    "cursor-talk-to-figma-mcp": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@sonnylazuardi/cursor-talk-to-figma-mcp",
+        "--key",
+        "7f203c12-d54e-4088-8735-786b2d443f3d",
+        "--profile",
+        "literary-barnacle-asCdRd"
+      ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "env": {
+        "DEFAULT_MINIMUM_TOKENS": ""
+      }
+    },
+    "sequentialthinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer"
+      ]
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ]
+    }
+  }
+}
