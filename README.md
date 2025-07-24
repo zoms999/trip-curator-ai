@@ -20,7 +20,7 @@ AI 기반 개인 맞춤형 여행 일정 자동 추천 및 최적화 서비스
 
 ### Backend
 - **FastAPI** - Python 웹 프레임워크
-- **OpenAI GPT-4** - AI 일정 생성
+- **Google Gemini Pro** - AI 일정 생성
 - **Supabase** - 데이터베이스
 - **Google Maps API** - 장소 정보
 
@@ -65,7 +65,7 @@ npm run dev
 
 ## 📋 필수 API 키
 
-1. **OpenAI API Key**: https://platform.openai.com/api-keys
+1. **Google Gemini API Key**: https://ai.google.dev/gemini-api/docs/quickstart
 2. **Supabase**: https://supabase.com (Database URL + anon key)
 3. **Google Maps API**: https://console.cloud.google.com
 

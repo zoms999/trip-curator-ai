@@ -12,7 +12,10 @@ export default function Home() {
   const handleTripGenerate = async (tripRequest: TripRequest) => {
     setIsLoading(true)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/generate-trip`, {
+      console.log('전송할 데이터:', tripRequest)
+      
+      // 실제 AI 일정 생성 시도
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'}/api/generate-trip`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -21,10 +24,14 @@ export default function Home() {
       })
       
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('서버 응답:', errorText)
         throw new Error('일정 생성에 실패했습니다')
       }
       
       const plan = await response.json()
+      console.log('AI 일정 생성 성공:', plan)
+      console.log('일정 데이터 구조:', JSON.stringify(plan, null, 2))
       setTripPlan(plan)
     } catch (error) {
       console.error('Error generating trip:', error)

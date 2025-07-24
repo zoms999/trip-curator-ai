@@ -4,9 +4,9 @@
 
 ### 필수 API 키 발급
 
-1. **OpenAI API Key**
-   - https://platform.openai.com/api-keys 에서 발급
-   - GPT-4 사용 권한 필요
+1. **Google Gemini API Key**
+   - https://ai.google.dev/gemini-api/docs/quickstart 에서 발급
+   - Google AI Studio에서 무료로 사용 가능
 
 2. **Supabase 설정**
    - https://supabase.com 에서 프로젝트 생성

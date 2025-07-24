@@ -22,6 +22,32 @@ class DatabaseService:
     
     async def save_trip_plan(self, trip_plan: TripPlan) -> bool:
         """여행 일정 저장"""
+        if not self.supabase:
+            print("Supabase 연결 없음. 메모리에 저장합니다.")
+            self.memory_storage.append(trip_plan)
+            return True
+
+        try:
+            # TripPlan 모델을 TripPlanDB 모델로 변환
+            trip_db_data = TripPlanDB(
+                id=trip_plan.id,
+                destination=trip_plan.destination,
+                duration=trip_plan.duration,
+                total_budget=trip_plan.total_budget,
+                overview=trip_plan.overview,
+                # .dict()는 deprecated, .model_dump() 사용
+                plan_data=trip_plan.model_dump(by_alias=True),
+                created_at=datetime.fromisoformat(trip_plan.created_at.replace('Z', '+00:00'))
+            )
+            
+            # .dict()는 deprecated, .model_dump() 사용
+            self.supabase.table('trip_plans').insert(trip_db_data.model_dump()).execute()
+            return True
+        except Exception as e:
+            print(f"Supabase 저장 오류: {e}. 메모리에 대신 저장합니다.")
+            self.memory_storage.append(trip_plan)
+            return True # 실패해도 메모리에 저장했으므로 True 반환
+        """여행 일정 저장"""
         try:
             if self.supabase:
                 # Supabase에 저장

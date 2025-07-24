@@ -1,8 +1,10 @@
 export interface TripRequest {
   destination: string
+  startDate: string // 출발일 (YYYY-MM-DD)
+  endDate: string // 도착일 (YYYY-MM-DD)
   duration: number // 일 수
   budget: number // 예산 (만원)
-  travelStyle: 'active' | 'relaxed' | 'cultural' | 'foodie' | 'nature'
+  travel_style: ('active' | 'relaxed' | 'cultural' | 'foodie' | 'nature' | 'shopping' | 'nightlife' | 'wellness' | 'photography' | 'luxury')[]
   companions: 'solo' | 'couple' | 'family' | 'friends'
   interests: string[] // 관심사 키워드
 }
@@ -11,7 +13,7 @@ export interface Place {
   name: string
   description: string
   category: string
-  estimatedTime: number // 분
+  estimated_time: number // 분
   coordinates?: {
     lat: number
     lng: number
@@ -24,7 +26,7 @@ export interface DayPlan {
   date: string
   theme: string
   places: Place[]
-  totalBudget: number
+  total_budget: number
   transportation: string
 }
 
@@ -32,9 +34,9 @@ export interface TripPlan {
   id: string
   destination: string
   duration: number
-  totalBudget: number
+  total_budget: number
   overview: string
   days: DayPlan[]
   tips: string[]
-  createdAt: string
+  created_at: string
 }

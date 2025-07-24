@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import React from 'react'
 import { useForm } from 'react-hook-form'
 import { TripRequest } from '../types/trip'
 import { MapPin, Calendar, DollarSign, Users, Heart } from 'lucide-react'
@@ -16,6 +17,11 @@ const travelStyles = [
   { value: 'cultural', label: '문화', desc: '역사와 문화 탐방' },
   { value: 'foodie', label: '미식', desc: '맛집과 음식 중심' },
   { value: 'nature', label: '자연', desc: '자연과 풍경 감상' },
+  { value: 'shopping', label: '쇼핑', desc: '쇼핑과 브랜드 탐방' },
+  { value: 'nightlife', label: '나이트라이프', desc: '밤문화와 엔터테인먼트' },
+  { value: 'wellness', label: '웰니스', desc: '힐링과 스파, 요가' },
+  { value: 'photography', label: '포토그래피', desc: '사진 촬영 중심 여행' },
+  { value: 'luxury', label: '럭셔리', desc: '고급스러운 프리미엄 여행' },
 ]
 
 const companionTypes = [
@@ -26,13 +32,34 @@ const companionTypes = [
 ]
 
 const interestOptions = [
-  '맛집', '카페', '쇼핑', '박물관', '미술관', '역사유적', 
+  '맛집', '카페', '쇼핑', '박물관', '미술관', '역사유적',
   '자연경관', '사진촬영', '야경', '전통문화', '현지체험', '액티비티'
 ]
 
 export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
   const { register, handleSubmit, watch, setValue } = useForm<TripRequest>()
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
+  const [selectedTravelStyles, setSelectedTravelStyles] = useState<string[]>([])
+  const [selectedCompanions, setSelectedCompanions] = useState<string>('')
+  
+  // 날짜 변경 감지 및 기간 자동 계산
+  const startDate = watch('startDate')
+  const endDate = watch('endDate')
+  
+  React.useEffect(() => {
+    if (startDate && endDate) {
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      
+      if (end >= start) {
+        const diffTime = end.getTime() - start.getTime()
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 to include both start and end days
+        setValue('duration', diffDays)
+      } else {
+        setValue('duration', 0)
+      }
+    }
+  }, [startDate, endDate, setValue])
 
   const toggleInterest = (interest: string) => {
     const updated = selectedInterests.includes(interest)
@@ -42,8 +69,27 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
     setValue('interests', updated)
   }
 
+  const toggleTravelStyle = (style: string) => {
+    const updated = selectedTravelStyles.includes(style)
+      ? selectedTravelStyles.filter(s => s !== style)
+      : [...selectedTravelStyles, style]
+    setSelectedTravelStyles(updated)
+    setValue('travel_style', updated as any)
+  }
+
   const onFormSubmit = (data: TripRequest) => {
-    onSubmit({ ...data, interests: selectedInterests })
+    const tripData = {
+      destination: data.destination,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      duration: data.duration,
+      budget: data.budget,
+      travel_style: selectedTravelStyles as any,
+      companions: selectedCompanions as any,
+      interests: selectedInterests
+    }
+    console.log('전송할 데이터:', tripData)
+    onSubmit(tripData)
   }
 
   return (
@@ -63,25 +109,48 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
           />
         </div>
 
+        {/* 여행 날짜 */}
+        <div className="space-y-3">
+          <label className="flex items-center text-lg font-semibold text-gray-700">
+            <Calendar className="w-5 h-5 mr-2 text-blue-500" />
+            여행 날짜
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-2">출발일</label>
+              <input
+                {...register('startDate', { required: true })}
+                type="date"
+                min={new Date().toISOString().split('T')[0]}
+                className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-2">도착일</label>
+              <input
+                {...register('endDate', { required: true })}
+                type="date"
+                min={startDate || new Date().toISOString().split('T')[0]}
+                className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* 기간 & 예산 */}
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-3">
             <label className="flex items-center text-lg font-semibold text-gray-700">
               <Calendar className="w-5 h-5 mr-2 text-blue-500" />
-              여행 기간
+              여행 기간 (자동 계산)
             </label>
-            <select
-              {...register('duration', { required: true })}
-              className="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
-            >
-              <option value="">선택하세요</option>
-              <option value={1}>당일치기</option>
-              <option value={2}>1박 2일</option>
-              <option value={3}>2박 3일</option>
-              <option value={4}>3박 4일</option>
-              <option value={5}>4박 5일</option>
-              <option value={7}>6박 7일</option>
-            </select>
+            <div className="w-full p-4 border-2 border-gray-200 rounded-lg bg-gray-50 text-lg text-gray-700">
+              {watch('duration') ? `${watch('duration')}일` : '날짜를 선택하세요'}
+            </div>
+            <input
+              {...register('duration')}
+              type="hidden"
+            />
           </div>
 
           <div className="space-y-3">
@@ -102,22 +171,23 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
         <div className="space-y-4">
           <label className="flex items-center text-lg font-semibold text-gray-700">
             <Heart className="w-5 h-5 mr-2 text-blue-500" />
-            어떤 여행을 원하시나요?
+            어떤 여행을 원하시나요? (복수 선택 가능)
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             {travelStyles.map((style) => (
-              <label key={style.value} className="cursor-pointer">
-                <input
-                  {...register('travelStyle', { required: true })}
-                  type="radio"
-                  value={style.value}
-                  className="sr-only"
-                />
-                <div className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 transition-colors peer-checked:border-blue-500 peer-checked:bg-blue-50">
+              <div
+                key={style.value}
+                className="cursor-pointer"
+                onClick={() => toggleTravelStyle(style.value)}
+              >
+                <div className={`p-4 border-2 rounded-lg hover:border-blue-300 transition-colors ${selectedTravelStyles.includes(style.value)
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200'
+                  }`}>
                   <div className="font-semibold text-gray-800">{style.label}</div>
                   <div className="text-sm text-gray-600">{style.desc}</div>
                 </div>
-              </label>
+              </div>
             ))}
           </div>
         </div>
@@ -130,17 +200,21 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
           </label>
           <div className="grid grid-cols-4 gap-3">
             {companionTypes.map((companion) => (
-              <label key={companion.value} className="cursor-pointer">
-                <input
-                  {...register('companions', { required: true })}
-                  type="radio"
-                  value={companion.value}
-                  className="sr-only"
-                />
-                <div className="p-3 text-center border-2 border-gray-200 rounded-lg hover:border-blue-300 transition-colors peer-checked:border-blue-500 peer-checked:bg-blue-50">
+              <div
+                key={companion.value}
+                className="cursor-pointer"
+                onClick={() => {
+                  setSelectedCompanions(companion.value)
+                  setValue('companions', companion.value as any)
+                }}
+              >
+                <div className={`p-3 text-center border-2 rounded-lg hover:border-blue-300 transition-colors ${selectedCompanions === companion.value
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200'
+                  }`}>
                   <div className="font-semibold text-gray-800">{companion.label}</div>
                 </div>
-              </label>
+              </div>
             ))}
           </div>
         </div>
@@ -156,11 +230,10 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
                 key={interest}
                 type="button"
                 onClick={() => toggleInterest(interest)}
-                className={`p-3 text-center border-2 rounded-lg transition-colors ${
-                  selectedInterests.includes(interest)
+                className={`p-3 text-center border-2 rounded-lg transition-colors ${selectedInterests.includes(interest)
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-gray-200 hover:border-blue-300'
-                }`}
+                  }`}
               >
                 {interest}
               </button>
@@ -171,7 +244,15 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
         {/* 제출 버튼 */}
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={
+            isLoading || 
+            selectedTravelStyles.length === 0 || 
+            !selectedCompanions || 
+            !watch('startDate') || 
+            !watch('endDate') || 
+            !watch('duration') || 
+            watch('duration') <= 0
+          }
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-4 px-6 rounded-lg text-lg transition-colors"
         >
           {isLoading ? '✨ AI가 일정을 만들고 있어요...' : '🎯 맞춤 일정 만들기'}
