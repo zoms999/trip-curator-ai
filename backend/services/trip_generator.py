@@ -82,22 +82,25 @@ class TripGenerator:
   "days": [
     {{
       "day": 1,
-      "date": "2024-01-01",
+      "date": "{request.start_date}",
       "theme": "첫날 테마",
       "places": [
         {{
           "name": "장소명",
-          "description": "장소 설명",
-          "category": "카테고리",
+          "description": "장소에 대한 상세한 설명 (2-3문장)",
+          "category": "맛집|카페|관광지|자연경관|쇼핑|박물관|미술관",
           "estimatedTime": 120,
-          "tips": "팁"
+          "tips": "실용적인 팁",
+          "recommendedMenu": ["추천메뉴1", "추천메뉴2", "추천활동1"],
+          "estimatedCost": "예상 비용 (예: 입장료 5,000원, 1인 식사 20,000원)",
+          "nearbyPlaces": ["근처 장소1", "근처 장소2"]
         }}
       ],
       "totalBudget": 50000,
       "transportation": "교통수단"
     }}
   ],
-  "tips": ["여행 팁1", "여행 팁2"]
+  "tips": ["실용적인 여행 팁1", "현지 정보 팁2", "절약 팁3"]
 }}"""
         return prompt
 
@@ -143,24 +146,43 @@ class TripGenerator:
         sample_places = [
             Place(
                 name="성산일출봉",
-                description="제주도의 대표적인 일출 명소",
+                description="제주도의 대표적인 일출 명소로, 유네스코 세계자연유산에 등재된 화산 분화구입니다.",
                 category="자연경관",
                 estimatedTime=90,
-                tips="일출 시간에 맞춰 방문하세요"
+                tips="일출 시간에 맞춰 방문하세요. 새벽 5시경 도착 권장",
+                recommendedMenu=["일출 감상", "트레킹", "사진 촬영"],
+                estimatedCost="입장료 5,000원",
+                nearbyPlaces=["섭지코지", "광치기해변"]
             ),
             Place(
                 name="우도",
-                description="아름다운 섬 풍경을 감상할 수 있는 곳",
+                description="제주 동쪽에 위치한 아름다운 섬으로, 에메랄드빛 바다와 하얀 모래사장이 유명합니다.",
                 category="자연경관", 
                 estimatedTime=180,
-                tips="자전거 대여를 추천합니다"
+                tips="자전거 대여를 추천합니다. 페리 시간표를 미리 확인하세요",
+                recommendedMenu=["자전거 투어", "해변 산책", "우도 땅콩 아이스크림"],
+                estimatedCost="페리 5,500원, 자전거 대여 15,000원",
+                nearbyPlaces=["성산포항", "해녀의 집"]
             ),
             Place(
                 name="제주 동문시장",
-                description="제주 전통 음식을 맛볼 수 있는 시장",
+                description="제주 전통 음식과 특산품을 맛볼 수 있는 대표적인 전통시장입니다.",
                 category="맛집",
                 estimatedTime=120,
-                tips="흑돼지 고기와 해산물을 꼭 드세요"
+                tips="흑돼지 고기와 해산물을 꼭 드세요. 현금 준비 필수",
+                recommendedMenu=["흑돼지 구이", "전복죽", "오메기떡", "한라봉"],
+                estimatedCost="1인 식사 15,000-25,000원",
+                nearbyPlaces=["제주 중앙로", "관덕정"]
+            ),
+            Place(
+                name="카페 드 파리",
+                description="제주의 아름다운 바다 전망을 감상할 수 있는 감성 카페입니다.",
+                category="카페",
+                estimatedTime=60,
+                tips="석양 시간대 방문을 추천합니다",
+                recommendedMenu=["제주 감귤 라떼", "한라봉 케이크", "바다 전망 테라스"],
+                estimatedCost="음료 8,000-12,000원",
+                nearbyPlaces=["협재해수욕장", "한림공원"]
             )
         ]
         

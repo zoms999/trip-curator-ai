@@ -19,6 +19,10 @@ export interface Place {
     lng: number
   }
   tips?: string
+  recommended_menu?: string[] // 추천 메뉴/활동
+  estimated_cost?: string // 예상 비용
+  nearby_places?: string[] // 주변 정보
+  image_url?: string // 이미지 URL
 }
 
 export interface DayPlan {

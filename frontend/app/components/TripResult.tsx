@@ -1,17 +1,61 @@
 'use client'
 
 import { useState } from 'react'
-import { TripPlan } from '../types/trip'
-import { Calendar, MapPin, Clock, DollarSign, Share2, Download, RotateCcw } from 'lucide-react'
+import { TripPlan, Place } from '../types/trip'
+import { Calendar, MapPin, Clock, DollarSign, Share2, Download, RotateCcw, Heart, ExternalLink, Navigation, Camera, Utensils, Coffee, Building, TreePine, ShoppingBag, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import TripMap from './TripMap'
+import { Disclosure, Transition } from '@headlessui/react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface TripResultProps {
   tripPlan: TripPlan
   onNewTrip: () => void
 }
 
+// 카테고리별 아이콘과 색상 매핑
+const getCategoryIcon = (category: string) => {
+  const categoryMap: { [key: string]: { icon: any, color: string, bgColor: string } } = {
+    '맛집': { icon: Utensils, color: 'text-red-600', bgColor: 'bg-red-50' },
+    '카페': { icon: Coffee, color: 'text-amber-600', bgColor: 'bg-amber-50' },
+    '관광지': { icon: Camera, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+    '자연경관': { icon: TreePine, color: 'text-green-600', bgColor: 'bg-green-50' },
+    '쇼핑': { icon: ShoppingBag, color: 'text-purple-600', bgColor: 'bg-purple-50' },
+    '박물관': { icon: Building, color: 'text-gray-600', bgColor: 'bg-gray-50' },
+    '미술관': { icon: Building, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
+  }
+  return categoryMap[category] || { icon: MapPin, color: 'text-gray-600', bgColor: 'bg-gray-50' }
+}
+
+// 장소 이미지 플레이스홀더 생성
+const getPlaceholderImage = (placeName: string, category: string) => {
+  const colors = ['bg-gradient-to-br from-blue-400 to-blue-600', 'bg-gradient-to-br from-green-400 to-green-600', 'bg-gradient-to-br from-purple-400 to-purple-600', 'bg-gradient-to-br from-red-400 to-red-600', 'bg-gradient-to-br from-yellow-400 to-yellow-600']
+  const colorIndex = placeName.length % colors.length
+  return colors[colorIndex]
+}
+
 export default function TripResult({ tripPlan, onNewTrip }: TripResultProps) {
   const [activeDay, setActiveDay] = useState(1)
+  const [likedPlaces, setLikedPlaces] = useState<Set<string>>(new Set())
+  
+  const toggleLike = (placeName: string) => {
+    const newLikedPlaces = new Set(likedPlaces)
+    if (newLikedPlaces.has(placeName)) {
+      newLikedPlaces.delete(placeName)
+    } else {
+      newLikedPlaces.add(placeName)
+    }
+    setLikedPlaces(newLikedPlaces)
+  }
+  
+  const openExternalLink = (type: 'naver' | 'kakao' | 'instagram', placeName: string) => {
+    const encodedPlace = encodeURIComponent(placeName)
+    const links = {
+      naver: `https://map.naver.com/v5/search/${encodedPlace}`,
+      kakao: `https://map.kakao.com/link/search/${encodedPlace}`,
+      instagram: `https://www.instagram.com/explore/tags/${encodedPlace.replace(/\s+/g, '')}/`
+    }
+    window.open(links[type], '_blank')
+  }
 
   if (!tripPlan || !tripPlan.days || tripPlan.days.length === 0) {
     return (
@@ -122,51 +166,209 @@ export default function TripResult({ tripPlan, onNewTrip }: TripResultProps) {
           <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6">
             <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
               {tripPlan.days.map((day) => (
-                <button
+                <motion.button
                   key={day.day}
                   onClick={() => setActiveDay(day.day)}
-                  className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors text-sm sm:text-base ${activeDay === day.day
-                    ? 'bg-blue-500 text-white font-semibold'
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors text-sm sm:text-base relative ${activeDay === day.day
+                    ? 'bg-blue-500 text-white font-semibold shadow-lg'
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                     }`}
                 >
                   {day.day}일차
-                </button>
+                  {activeDay === day.day && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-blue-500 rounded-lg -z-10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </motion.button>
               ))}
             </div>
 
             {/* 선택된 일차 상세 */}
-            {tripPlan.days
-              .find((day) => day.day === activeDay)
-              ?.places.map((place, index) => (
-                <div key={index} className="bg-gray-50 rounded-xl p-4 sm:p-6 border border-gray-200 mb-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <h4 className="text-base sm:text-lg font-semibold text-gray-800 flex-1 mr-4">
-                      {place.name}
-                    </h4>
-                    <div className="flex items-center text-xs sm:text-sm text-gray-500 bg-white px-2 py-1 sm:px-3 sm:py-2 rounded-lg shadow-sm">
-                      <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                      <span>{place.estimated_time || place.estimatedTime}분</span>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeDay}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4"
+              >
+                {tripPlan.days
+                  .find((day) => day.day === activeDay)
+                  ?.places.map((place, index) => {
+                    const categoryInfo = getCategoryIcon(place.category)
+                    const IconComponent = categoryInfo.icon
+                    const isLiked = likedPlaces.has(place.name)
+                    
+                    return (
+                      <Disclosure key={index}>
+                        {({ open }) => (
+                          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            {/* 장소 이미지 헤더 */}
+                            <div className={`h-32 ${place.image_url ? 'bg-cover bg-center' : getPlaceholderImage(place.name, place.category)} relative`}
+                                 style={place.image_url ? { backgroundImage: `url(${place.image_url})` } : {}}>
+                              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-end p-4">
+                                <div className="flex items-center space-x-2">
+                                  <div className={`p-2 rounded-full ${categoryInfo.bgColor}`}>
+                                    <IconComponent className={`w-4 h-4 ${categoryInfo.color}`} />
+                                  </div>
+                                  <span className="text-white font-semibold text-lg">{place.name}</span>
+                                </div>
+                                <button
+                                  onClick={() => toggleLike(place.name)}
+                                  className="ml-auto p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-colors"
+                                >
+                                  <Heart className={`w-5 h-5 ${isLiked ? 'text-red-500 fill-current' : 'text-white'}`} />
+                                </button>
+                              </div>
+                            </div>
+                            
+                            {/* 기본 정보 */}
+                            <div className="p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center space-x-3">
+                                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${categoryInfo.bgColor} ${categoryInfo.color}`}>
+                                    {place.category}
+                                  </span>
+                                  <div className="flex items-center text-sm text-gray-500">
+                                    <Clock className="w-4 h-4 mr-1" />
+                                    <span>{place.estimated_time || (place as any).estimatedTime}분</span>
+                                  </div>
+                                </div>
+                                <Disclosure.Button className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                                  <span className="text-sm mr-1">상세보기</span>
+                                  <ChevronDown className={`w-4 h-4 transform transition-transform ${open ? 'rotate-180' : ''}`} />
+                                </Disclosure.Button>
+                              </div>
+                              
+                              <p className="text-gray-600 text-sm leading-relaxed mb-3">
+                                {place.description}
+                              </p>
+                              
+                              {place.tips && (
+                                <div className="flex items-start space-x-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                                  <span className="text-amber-600 mt-0.5">💡</span>
+                                  <span className="text-amber-800 text-sm">{place.tips}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* 확장 가능한 상세 정보 */}
+                            <Transition
+                              enter="transition duration-100 ease-out"
+                              enterFrom="transform scale-95 opacity-0"
+                              enterTo="transform scale-100 opacity-100"
+                              leave="transition duration-75 ease-out"
+                              leaveFrom="transform scale-100 opacity-100"
+                              leaveTo="transform scale-95 opacity-0"
+                            >
+                              <Disclosure.Panel className="px-4 pb-4 border-t border-gray-100">
+                                <div className="pt-4 space-y-4">
+                                  {/* 추천 메뉴/활동 */}
+                                  {place.recommended_menu && place.recommended_menu.length > 0 && (
+                                    <div>
+                                      <h5 className="font-semibold text-gray-800 mb-2 flex items-center">
+                                        <Star className="w-4 h-4 mr-2 text-yellow-500" />
+                                        추천 {place.category === '맛집' ? '메뉴' : '활동'}
+                                      </h5>
+                                      <div className="flex flex-wrap gap-2">
+                                        {place.recommended_menu.map((item, idx) => (
+                                          <span key={idx} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                                            {item}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* 예상 비용 */}
+                                  {place.estimated_cost && (
+                                    <div>
+                                      <h5 className="font-semibold text-gray-800 mb-2 flex items-center">
+                                        <DollarSign className="w-4 h-4 mr-2 text-green-500" />
+                                        예상 비용
+                                      </h5>
+                                      <span className="text-green-700 bg-green-100 px-3 py-1 rounded-full text-sm">
+                                        {place.estimated_cost}
+                                      </span>
+                                    </div>
+                                  )}
+                                  
+                                  {/* 주변 정보 */}
+                                  {place.nearby_places && place.nearby_places.length > 0 && (
+                                    <div>
+                                      <h5 className="font-semibold text-gray-800 mb-2 flex items-center">
+                                        <MapPin className="w-4 h-4 mr-2 text-blue-500" />
+                                        근처 가볼 만한 곳
+                                      </h5>
+                                      <div className="space-y-1">
+                                        {place.nearby_places.map((nearbyPlace, idx) => (
+                                          <span key={idx} className="block text-sm text-gray-600 pl-6">
+                                            • {nearbyPlace}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* 바로가기 버튼들 */}
+                                  <div>
+                                    <h5 className="font-semibold text-gray-800 mb-3 flex items-center">
+                                      <ExternalLink className="w-4 h-4 mr-2 text-purple-500" />
+                                      바로가기
+                                    </h5>
+                                    <div className="flex flex-wrap gap-2">
+                                      <button
+                                        onClick={() => openExternalLink('naver', place.name)}
+                                        className="flex items-center px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm transition-colors"
+                                      >
+                                        <Navigation className="w-4 h-4 mr-1" />
+                                        네이버 지도
+                                      </button>
+                                      <button
+                                        onClick={() => openExternalLink('kakao', place.name)}
+                                        className="flex items-center px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm transition-colors"
+                                      >
+                                        <Navigation className="w-4 h-4 mr-1" />
+                                        카카오맵
+                                      </button>
+                                      <button
+                                        onClick={() => openExternalLink('instagram', place.name)}
+                                        className="flex items-center px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg text-sm transition-colors"
+                                      >
+                                        <Camera className="w-4 h-4 mr-1" />
+                                        인스타그램
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </Disclosure.Panel>
+                            </Transition>
+                          </div>
+                        )}
+                      </Disclosure>
+                    )
+                  })}
+                  
+                {/* 이동 시간 표시 */}
+                {tripPlan.days.find((day) => day.day === activeDay)?.places && 
+                 tripPlan.days.find((day) => day.day === activeDay)!.places.length > 1 && (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="flex items-center space-x-2 text-gray-500">
+                      <div className="w-8 h-0.5 bg-gray-300"></div>
+                      <Navigation className="w-4 h-4" />
+                      <span className="text-sm">예상 이동시간: 10-15분</span>
+                      <div className="w-8 h-0.5 bg-gray-300"></div>
                     </div>
                   </div>
-
-                  <p className="text-gray-600 mb-4 leading-relaxed text-sm sm:text-base">
-                    {place.description}
-                  </p>
-
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="inline-block px-3 py-1 sm:px-4 sm:py-2 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-medium">
-                      {place.category}
-                    </span>
-                    {(place.tips) && (
-                      <div className="flex items-center text-xs sm:text-sm text-amber-700 bg-amber-50 px-3 py-1 sm:px-4 sm:py-2 rounded-full border border-amber-200">
-                        <span className="mr-2">💡</span>
-                        <span>{place.tips}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 
@@ -178,6 +380,35 @@ export default function TripResult({ tripPlan, onNewTrip }: TripResultProps) {
               places={tripPlan.days.find(d => d.day === activeDay)?.places || []}
             />
           </div>
+          {/* 좋아요한 장소들 */}
+          {likedPlaces.size > 0 && (
+            <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6">
+              <div className="flex items-center mb-4">
+                <Heart className="w-5 h-5 mr-2 text-red-500 fill-current" />
+                <h3 className="text-lg font-semibold text-gray-800">마음에 든 장소</h3>
+              </div>
+              <div className="space-y-2">
+                {Array.from(likedPlaces).map((placeName, index) => (
+                  <motion.div
+                    key={placeName}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200"
+                  >
+                    <span className="text-red-800 text-sm font-medium">{placeName}</span>
+                    <button
+                      onClick={() => toggleLike(placeName)}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                    >
+                      <Heart className="w-4 h-4 fill-current" />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6">
             <div className="flex items-center mb-4">
               <span className="text-xl mr-2">💡</span>

@@ -28,6 +28,10 @@ class Place(BaseModel):
     estimated_time: int = Field(alias='estimatedTime')
     coordinates: Optional[Coordinates] = None
     tips: Optional[str] = None
+    recommended_menu: Optional[List[str]] = Field(default=None, alias='recommendedMenu')  # 추천 메뉴/활동
+    estimated_cost: Optional[str] = Field(default=None, alias='estimatedCost')  # 예상 비용
+    nearby_places: Optional[List[str]] = Field(default=None, alias='nearbyPlaces')  # 주변 정보
+    image_url: Optional[str] = Field(default=None, alias='imageUrl')  # 이미지 URL
     
     class Config:
         allow_population_by_field_name = True
