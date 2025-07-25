@@ -31,9 +31,11 @@ const companionTypes = [
   { value: 'friends', label: '친구들' },
 ]
 
+// '피서', '해수욕장', '물놀이' 추가
 const interestOptions = [
   '맛집', '카페', '쇼핑', '박물관', '미술관', '역사유적',
-  '자연경관', '사진촬영', '야경', '전통문화', '현지체험', '액티비티'
+  '자연경관', '사진촬영', '야경', '전통문화', '현지체험', '액티비티',
+  '피서', '해수욕장', '물놀이'
 ]
 
 export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
@@ -224,7 +226,7 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
           <label className="text-lg font-semibold text-gray-700">
             관심 있는 활동을 선택해주세요 (복수 선택 가능)
           </label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
             {interestOptions.map((interest) => (
               <button
                 key={interest}

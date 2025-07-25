@@ -1,4 +1,4 @@
-# 🧳 트립 큐레이터 AI (Trip Curator AI)
+# 🧳 코스짜요AI (Trip Curator AI)
 
 AI 기반 개인 맞춤형 여행 일정 자동 추천 및 최적화 서비스
 

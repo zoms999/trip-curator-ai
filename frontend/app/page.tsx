@@ -46,7 +46,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <header className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">
-            🧳 트립 큐레이터 AI
+            🧳 코스짜요 AI
           </h1>
           <p className="text-xl text-gray-600">
             AI가 당신만을 위한 완벽한 여행 일정을 만들어드립니다
